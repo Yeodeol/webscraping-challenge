@@ -1,3 +1,9 @@
+"""
+creacion de scripts para obtener informacion de todos los libros de un sitio web
+especifico : http://books.toscrape.com
+y posteriormente generar un csv con toda la informacion rescatada. 
+"""
+
 import requests
 from bs4 import BeautifulSoup
 import re
@@ -55,7 +61,7 @@ def book_info(link_libro,):
     libro.append(categoria)
     libro.append(nueva_src)
     libro.append(tds[0].text)
-    libro.append(tds[1].text) 
+    libro.append(tds[1].text)
     libro.append(tds[2].text[2:])
     libro.append(tds[3].text[2:])
     libro.append(tds[4].text[2:])
@@ -69,3 +75,33 @@ def get_category(url):
     lista = url.find("ul", attrs={"class":"breadcrumb"})
     ul = lista.findAll('li')
     return ul[2].text
+
+#fin de metodos
+
+#inicio de logica
+soup = clean_url(principal_url)
+listado_paginas = get_sheets(principal_url)
+
+
+
+for y in listado_paginas:
+    #recorrer cada pagina
+    print('hoja: {} '.format(contador_hoja))
+    soup = clean_url(y)
+    if contador_hoja >= 2:
+        listado_de_url_por_hoja = ["catalogue/"+x.div.a.get('href') for x in soup.findAll("article", class_ = "product_pod")]
+    else:
+        listado_de_url_por_hoja = [x.div.a.get('href') for x in soup.findAll("article", class_ = "product_pod")]
+
+    for link in listado_de_url_por_hoja:
+        #obtener informacion de los libros
+        print('libro: {} '.format(contador_libro))
+        biblioteca[str(contador_libro)] = book_info(link)
+        contador_libro += 1
+    contador_hoja +=1
+
+#creacion del csv
+fecha = time.strftime("%y_%m_%d")
+archive_name = 'libros_'+str(fecha)+".csv"
+df = pd.DataFrame.from_dict(biblioteca,orient='index',columns =['Title','Price','Stock','Category','Cover','UPC','Product Type','Price (excl. tax)','Price (incl. tax)','Tax','Availability','Number of reviews'])
+df.to_csv(archive_name,index=True)
