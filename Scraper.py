@@ -55,7 +55,7 @@ def book_info(link_libro,):
     libro.append(categoria)
     libro.append(nueva_src)
     libro.append(tds[0].text)
-    libro.append(tds[1].text)
+    libro.append(tds[1].text) 
     libro.append(tds[2].text[2:])
     libro.append(tds[3].text[2:])
     libro.append(tds[4].text[2:])
